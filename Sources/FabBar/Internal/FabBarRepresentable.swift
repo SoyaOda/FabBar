@@ -8,8 +8,6 @@ import UIKit
 struct FabBarRepresentable<Tab: Hashable>: UIViewRepresentable {
     var size: CGSize
     var items: [FabBarItem<Tab>]
-    var barTint: UIColor = .label.withAlphaComponent(0.08)
-    var inactiveTint: UIColor = .label
     var action: FabAction
 
     @Binding var activeTab: Tab
@@ -34,7 +32,7 @@ struct FabBarRepresentable<Tab: Hashable>: UIViewRepresentable {
             control.setTitle(item.title, forSegmentAt: index)
         }
 
-        control.selectedSegmentTintColor = barTint
+        control.selectedSegmentTintColor = .label.withAlphaComponent(0.08)
 
         control.addTarget(context.coordinator, action: #selector(context.coordinator.tabSelected(_:)), for: .valueChanged)
 
@@ -55,7 +53,7 @@ struct FabBarRepresentable<Tab: Hashable>: UIViewRepresentable {
         )
 
         // Set label colors
-        container.labelsOverlay.inactiveTintColor = inactiveTint
+        container.labelsOverlay.inactiveTintColor = .label
 
         return container
     }
