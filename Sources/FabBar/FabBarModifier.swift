@@ -7,6 +7,7 @@ import SwiftUI
 /// - Applies appropriate padding
 /// - Ignores bottom safe area for manual positioning
 /// - Hides automatically on regular horizontal size class (iPad)
+/// - Injects calculated safe area padding into the environment
 @available(iOS 26.0, *)
 struct FabBarModifier<Value: Hashable>: ViewModifier {
     @Binding var selection: Value
@@ -15,6 +16,19 @@ struct FabBarModifier<Value: Hashable>: ViewModifier {
     let isVisible: Bool
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @State private var bottomSafeAreaInset: CGFloat = 0
+
+    /// Total content margin needed to clear the FabBar.
+    private var bottomContentMargin: CGFloat {
+        Constants.barHeight + Constants.bottomPadding
+    }
+
+    /// The padding to inject into the environment.
+    /// This is the total content margin minus the device's safe area inset,
+    /// because `safeAreaPadding` adds to the existing safe area.
+    private var calculatedPadding: CGFloat {
+        bottomContentMargin - bottomSafeAreaInset
+    }
 
     func body(content: Content) -> some View {
         content
@@ -25,7 +39,13 @@ struct FabBarModifier<Value: Hashable>: ViewModifier {
                         .padding(.bottom, Constants.bottomPadding)
                 }
             }
-            .ignoresSafeArea(.container, edges: horizontalSizeClass == .compact && isVisible ? [.bottom] : [])
+            .ignoresSafeArea(.all, edges: horizontalSizeClass == .compact && isVisible ? [.bottom] : [])
+            .onGeometryChange(for: CGFloat.self) { proxy in
+                proxy.safeAreaInsets.bottom
+            } action: { newValue in
+                bottomSafeAreaInset = newValue
+            }
+            .environment(\.fabBarBottomSafeAreaPadding, calculatedPadding)
     }
 }
 

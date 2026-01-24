@@ -26,8 +26,7 @@ struct ContentView: View {
             }
 
             Tab("Explore", systemImage: "map.fill", value: AppTab.explore) {
-                TabContentView(title: "Explore", systemImage: "map.fill")
-                    .fabBarSafeAreaPadding()
+                ExploreTabView()
                     .toolbarVisibility(tabBarVisibility, for: .tabBar)
             }
 
@@ -57,7 +56,6 @@ struct ContentView: View {
                 showingSheet = true
             }
         )
-        .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showingSheet) {
             Text("Sheet content")
                 .presentationDetents([.medium])
@@ -84,6 +82,42 @@ struct TabContentView: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .accessibilityHidden(true)
             .navigationTitle(title)
+        }
+    }
+}
+
+struct ExploreTabView: View {
+    private let places = [
+        ("San Francisco", "Golden Gate Bridge and tech hub"),
+        ("New York", "The city that never sleeps"),
+        ("Tokyo", "Ancient traditions meet modern innovation"),
+        ("Paris", "City of lights and romance"),
+        ("London", "Historic capital with royal heritage"),
+        ("Sydney", "Harbor city with iconic opera house"),
+        ("Rome", "Eternal city of ancient wonders"),
+        ("Barcelona", "Gaudí's architectural playground"),
+        ("Amsterdam", "Canals, bikes, and Dutch charm"),
+        ("Singapore", "Garden city of the future"),
+        ("Dubai", "Modern marvels in the desert"),
+        ("Cape Town", "Mountains meet the sea"),
+        ("Rio de Janeiro", "Carnival spirit and beaches"),
+        ("Vancouver", "Nature at your doorstep"),
+        ("Melbourne", "Coffee culture capital"),
+    ]
+
+    var body: some View {
+        NavigationStack {
+            List(places, id: \.0) { place in
+                VStack(alignment: .leading) {
+                    Text(place.0)
+                        .font(.headline)
+                    Text(place.1)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .fabBarSafeAreaPadding()
+            .navigationTitle("Explore")
         }
     }
 }
