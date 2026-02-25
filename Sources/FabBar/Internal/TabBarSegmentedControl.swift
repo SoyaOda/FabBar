@@ -344,7 +344,18 @@ final class TabBarSegmentedControl: UISegmentedControl {
         let accentPres = accentView.layer.presentation() ?? accentView.layer
         let selfPres = self.layer.presentation() ?? self.layer
         let viewRectInControl = selfPres.convert(accentPres.bounds, from: accentPres)
-        let intersection = indicatorRect.intersection(viewRectInControl)
+
+        // Convert the indicator rect into the content view's local coordinate space.
+        // Using the full capsule path (not a rect intersection) ensures rounded
+        // corners are preserved even when the indicator partially overlaps.
+        let localIndicator = CGRect(
+            x: indicatorRect.origin.x - viewRectInControl.origin.x,
+            y: indicatorRect.origin.y - viewRectInControl.origin.y,
+            width: indicatorRect.width,
+            height: indicatorRect.height
+        )
+        let cornerRadius = indicatorRect.height / 2
+        let capsulePath = UIBezierPath(roundedRect: localIndicator, cornerRadius: cornerRadius)
 
         let accentMask = accentView.layer.mask as? CAShapeLayer ?? {
             let m = CAShapeLayer()
@@ -352,29 +363,22 @@ final class TabBarSegmentedControl: UISegmentedControl {
             return m
         }()
 
-        let baseMask = baseView.layer.mask as? CAShapeLayer ?? {
-            let m = CAShapeLayer()
-            baseView.layer.mask = m
-            return m
-        }()
+        // Accent: show only inside the indicator capsule
+        accentMask.path = capsulePath.cgPath
 
-        if intersection.isNull || intersection.isEmpty {
-            accentMask.path = UIBezierPath(rect: .zero).cgPath
-            baseView.layer.mask = nil // fully visible
-        } else {
-            let localRect = CGRect(
-                x: intersection.origin.x - viewRectInControl.origin.x,
-                y: intersection.origin.y - viewRectInControl.origin.y,
-                width: intersection.width,
-                height: intersection.height
-            )
-            // Accent: show only inside indicator
-            accentMask.path = UIBezierPath(rect: localRect).cgPath
-            // Base: cut out the indicator rect using even-odd fill
+        // Base: cut out the indicator capsule using even-odd fill
+        if indicatorRect.intersects(viewRectInControl) {
+            let baseMask = baseView.layer.mask as? CAShapeLayer ?? {
+                let m = CAShapeLayer()
+                baseView.layer.mask = m
+                return m
+            }()
             let basePath = UIBezierPath(rect: baseView.bounds)
-            basePath.append(UIBezierPath(rect: localRect))
+            basePath.append(capsulePath)
             baseMask.fillRule = .evenOdd
             baseMask.path = basePath.cgPath
+        } else {
+            baseView.layer.mask = nil
         }
     }
 
