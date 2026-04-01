@@ -42,7 +42,14 @@ final class GlassTabBarView: UIView {
 
         let button = UIButton(type: .system)
         let config = UIImage.SymbolConfiguration(pointSize: Constants.fabIconPointSize, weight: .medium)
-        let buttonImage = UIImage(systemName: action.systemImage, withConfiguration: config)
+        let buttonImage: UIImage?
+        if let custom = action.customImage {
+            buttonImage = custom.withConfiguration(config)
+        } else if let systemName = action.systemImage {
+            buttonImage = UIImage(systemName: systemName, withConfiguration: config)
+        } else {
+            buttonImage = nil
+        }
         button.setImage(buttonImage, for: .normal)
         button.tintColor = .white
         button.accessibilityLabel = action.accessibilityLabel
