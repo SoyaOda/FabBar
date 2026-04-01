@@ -44,7 +44,8 @@ final class GlassTabBarView: UIView {
         let config = UIImage.SymbolConfiguration(pointSize: Constants.fabIconPointSize, weight: .medium)
         let buttonImage: UIImage?
         if let custom = action.customImage {
-            buttonImage = custom.withConfiguration(config)
+            // カスタム画像はそのまま使う（SymbolConfiguration はSF Symbol専用）
+            buttonImage = custom
         } else if let systemName = action.systemImage {
             buttonImage = UIImage(systemName: systemName, withConfiguration: config)
         } else {
